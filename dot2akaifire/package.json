@@ -1,0 +1,23 @@
+{
+  "name": "dot2akaifire",
+  "version": "1.0.0",
+  "description": "none",
+  "main": "dot2akaifire.js",
+  "scripts": {
+    "test": "none"
+  },
+  "repository": {
+    "type": "git",
+    "url": "none"
+  },
+  "keywords": [
+    "none"
+  ],
+  "author": "ArtGateOne",
+  "license": "ISC",
+  "dependencies": {
+    "easymidi": "^3.0.1",
+    "robotjs": "^0.6.0",
+    "websocket": "^1.0.34"
+  }
+}
