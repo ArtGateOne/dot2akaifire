@@ -1,4 +1,4 @@
-//dot2 Akai Fire control code v 1.0.1 by ArtGateOne
+//dot2 Akai Fire control code v 1.0.2 by ArtGateOne
 var robot = require("robotjs");
 var easymidi = require('easymidi');
 var W3CWebSocket = require('websocket')
@@ -241,7 +241,7 @@ input.on('noteon', function (msg) {
 
 
 input.on('noteoff', function (msg) {
-    if (msg.note >= 16 && msg.note <= 19) {//Encoder touch off
+    if (msg.note >= 16 && msg.note <= 19 && encoder_mode == 1) {//Encoder touch off
         robot.mouseToggle('up');
     }
 
