@@ -1,4 +1,4 @@
-//dot2 Akai Fire control code v 1.0.0 by ArtGateOne
+//dot2 Akai Fire control code v 1.0.1 by ArtGateOne
 var robot = require("robotjs");
 var easymidi = require('easymidi');
 var W3CWebSocket = require('websocket')
@@ -501,7 +501,7 @@ client.onmessage = function (e) {
         }
 
         if (obj.responseType == "login" && obj.result == true) {
-            setInterval(interval, 80);//80
+            setInterval(interval, 100);//80
             console.log("...LOGGED");
             console.log("SESSION " + session);
         }
