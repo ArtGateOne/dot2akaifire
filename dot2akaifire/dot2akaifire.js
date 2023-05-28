@@ -1,4 +1,4 @@
-//dot2 Akai Fire control code v 1.0.5 by ArtGateOne
+//dot2 Akai Fire control code v 1.0.75 by ArtGateOne
 var robot = require("robotjs");
 var easymidi = require('easymidi');
 var W3CWebSocket = require('websocket')
@@ -11,7 +11,7 @@ midi_in = 'FL STUDIO FIRE';     //set correct midi in device name
 midi_out = 'FL STUDIO FIRE';    //set correct midi out device name
 colors = 0; //auto color 0 = off, 1 = on
 blink = 0;  //blink run executor 0 = off, 1 = on (blink work only when colors mode is on)
-learn_rate1 = 1;  // 0=off, 1=on (touch encoders to learn speed masters, hold STEP button and touch encoder to Rate1)
+learn_rate1 = 1;  // SHIFT BUTTON 0=off, 1=on (touch encoders to learn speed masters, hold STEP button and touch encoder to Rate1)(set 1 - if u want use DELETE!)
 page_flash = 0; // 0=off (normal switch pages), 1=on (klick and hold page button, when release button - back to page 1);
 
 //-----------------------------------------------------------------------------------
@@ -48,6 +48,10 @@ var ProgTime = 0;
 var grandmaster = 100;
 var blackout = 0;
 
+var cmd = '';
+
+console.log(cmd);
+
 var input = new easymidi.Input(midi_in);
 var output = new easymidi.Output(midi_out);
 
@@ -64,6 +68,7 @@ var C3 = 0;
 var C4 = 1;
 var led_toggle = 0;
 var request = 0;
+var confirm = 0;
 var pageIndex = 0;
 var encoder_mode = 0;   //encoder mode 0 = speed masters, 1 = on screen encoder, 2 = user 1, 3 = user 2
 var x = 0;
@@ -266,10 +271,58 @@ input.on('noteon', function (msg) {
 
     else if (msg.note == 44 && learn_rate1 == 1) {
         learn_rate1 = 2;//Rate1 mode
+        if (confirm == 0){
+            output.send('cc', { controller: 44, value: 1, channel: 0 });   //Led highlight
+            output.send('cc', { controller: 49, value: 1, channel: 0 });   //Led highlight delete
+            output.send('cc', { controller: 53, value: 2, channel: 0 });   //Led highlight rec
+        }
+
+    }
+
+    else if (msg.note == 49) {//Delete
+        if (cmd == '' && learn_rate1 == 2) {
+            cmd = 'Delete';
+            output.send('cc', { controller: 49, value: 2, channel: 0 });   //REC button red
+        }
+    }
+
+    else if (msg.note == 50) {//Save confirm Merge
+        if (confirm == 1) {
+            client.send('{"requestType":"commandConfirmationResult","result":2,"option":[],"session":' + session + ',"maxRequests":0}'); //Merge
+            confirm_off();
+        }
+    }
+
+    else if (msg.note == 51) {//Save confirm Remove
+        if (confirm == 1) {
+            client.send('{"requestType":"commandConfirmationResult","result":4,"option":[],"session":' + session + ',"maxRequests":0}'); //Remove
+            confirm_off();
+        }
+    }
+
+    else if (msg.note == 52) {//Save confirm Overwrite
+        if (confirm == 1) {
+            client.send('{"requestType":"commandConfirmationResult","result":1,"option":[],"session":' + session + ',"maxRequests":0}'); //Overwrite
+            confirm_off();
+        }
+    }
+
+    else if (msg.note == 53) {//REC button
+        if (cmd == '' && confirm == 0 && learn_rate1 == 2) {
+            cmd = 'StoreLook';
+            output.send('cc', { controller: 53, value: 1, channel: 0 });   //REC button red
+        }
+        if (cmd == '' && confirm == 0) {
+            cmd = 'Store';
+            output.send('cc', { controller: 53, value: 1, channel: 0 });   //REC button red
+        } else if (confirm == 1) {//Save confirm Create second cue
+            client.send('{"requestType":"commandConfirmationResult","result":6,"option":[],"session":' + session + ',"maxRequests":0}'); //Create second cue
+            confirm_off();
+        }
     }
 
     else if (msg.note >= 54 && msg.note <= 117) {//Executor down
-        client.send('{"requestType":"playbacks_userInput","cmdline":"","execIndex":' + buttons[(msg.note - 54)] + ',"pageIndex":' + pageIndex + ',"buttonId":0,"pressed":true,"released":false,"type":0,"session":' + session + ',"maxRequests":0}');
+        client.send('{"requestType":"playbacks_userInput","cmdline":"' + cmd + '","execIndex":' + buttons[(msg.note - 54)] + ',"pageIndex":' + pageIndex + ',"buttonId":0,"pressed":true,"released":false,"type":0,"session":' + session + ',"maxRequests":0}');
     }
 
 });
@@ -292,11 +345,35 @@ input.on('noteoff', function (msg) {
             pageIndex = 0;
             buttons_brightness();
         }
-
     }
 
     else if (msg.note == 44 && learn_rate1 == 2) {
         learn_rate1 = 1;//Learn mode
+        output.send('cc', { controller: 44, value: 2, channel: 0 });   //Learn Rate1
+        if (confirm == 0){
+            confirm_off();
+        }
+    }
+
+    else if (msg.note == 49) {//Delete off led
+        if (cmd == 'Delete') {
+            cmd = '';
+            confirm_off();
+        }
+    }
+
+    else if (msg.note == 53) {
+        if (cmd == 'Store' || cmd == 'StoreLook') {
+            cmd = '';
+            if (learn_rate1 == 2) {
+                output.send('cc', { controller: 53, value: 2, channel: 0 });   //REC button yellow
+            }
+
+            else {
+                output.send('cc', { controller: 53, value: 0, channel: 0 });   //REC button off
+            }
+
+        }
     }
 
     else if (msg.note >= 54 && msg.note <= 117) {//Executor up
@@ -545,6 +622,23 @@ client.onmessage = function (e) {
         }
 
         if (obj.text) {
+            cmd = obj.text;
+            if (obj.text == 'Store' || obj.text == 'StoreLook') {
+                output.send('cc', { controller: 53, value: 1, channel: 0 });   //REC button led on Red
+            }
+
+            else if (obj.text == 'Delete') {
+                output.send('cc', { controller: 49, value: 1, channel: 0 });   //REC button led on Red
+            }
+
+            else {
+                confirm = 1;
+                output.send('cc', { controller: 50, value: 1, channel: 0 });   //Merge button led on green
+                output.send('cc', { controller: 51, value: 1, channel: 0 });   //Remove button led on green
+                output.send('cc', { controller: 52, value: 1, channel: 0 });   //Overwrite button led on yellow
+                output.send('cc', { controller: 53, value: 2, channel: 0 });   //Create second cue button led on yellow
+            }
+
             console.log(obj.text);
             text = obj.text;
         }
@@ -712,14 +806,9 @@ function buttons_brightness() {
         C4 = 2; //GM led Hi
     }
 
-    else if (C2 > 2 && C2 <= 16) {//led button brightness low
+    else if (C2 <= 16) {//led button brightness low
         C3 = 2; //Led Green low
         C4 = 1;
-    }
-
-    else if (C2 <= 2) {//led buttons off
-        C3 = 0; //Led off
-        C4 = 0;
     }
 
     if (C2 == 64) {
@@ -735,10 +824,6 @@ function buttons_brightness() {
     output.send('cc', { controller: 37, value: C4, channel: 0 });   //button page 2
     output.send('cc', { controller: 38, value: C4, channel: 0 });   //button page 3
     output.send('cc', { controller: 39, value: C4, channel: 0 });   //button page 4
-    if (learn_rate1 != 0) {
-        output.send('cc', { controller: 44, value: C4, channel: 0 });   //Learn Rate1
-    }
-
 
     if (ExecTime == 1) {//ExecTime led
         output.send('cc', { controller: 34, value: C4, channel: 0 });
@@ -774,5 +859,27 @@ function buttons_brightness() {
         output.send('cc', { controller: 43, value: C3, channel: 0 });   //page 3 led
     } else {
         output.send('cc', { controller: 43, value: 0, channel: 0 });
+    }
+
+    if (learn_rate1 == 1){
+        output.send('cc', { controller: 44, value: 2, channel: 0 }); //Learn Rate1 + Shift Led
+    }
+}
+
+function confirm_off() {
+
+    if (learn_rate1 == 2) {
+        output.send('cc', { controller: 49, value: 1, channel: 0 });   //Learn Rate1
+        output.send('cc', { controller: 53, value: 2, channel: 0 });   //Learn Rate1
+    }
+
+    else {
+        cmd = '';
+        confirm = 0;
+        output.send('cc', { controller: 49, value: 0, channel: 0 });   //Off led
+        output.send('cc', { controller: 50, value: 0, channel: 0 });   //Off led
+        output.send('cc', { controller: 51, value: 0, channel: 0 });   //Off led
+        output.send('cc', { controller: 52, value: 0, channel: 0 });   //Off led
+        output.send('cc', { controller: 53, value: 0, channel: 0 });   //Off led
     }
 }
