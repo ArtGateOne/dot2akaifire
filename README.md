@@ -25,10 +25,20 @@ This is a very early version of the code for Fire, but it's stable enough and wo
 Configuration - open the dot2akaifire.js file in Notepad and find the line //CONFIG
 
 //CONFIG
-midi_in = 'FL STUDIO FIRE'; //set correct MIDI in device name
-midi_out = 'FL STUDIO FIRE'; //set correct MIDI out device name
-colors = 1; //auto color 0 = off, 1 = on
-blink = 0; //blin executor 0 = off, 1 = on (blink work only when colors mode is on)
+
+midi_in = 'FL STUDIO FIRE';     //midi in device name
+
+midi_out = 'FL STUDIO FIRE';    //midi out device name
+
+colors = 0; //auto color 0 = off, 1 = on (program get color from executor name)
+
+blink = 0;  //blink run executor 0 = off, 1 = on (blink work only when colors mode is on)
+
+learn_rate1 = 1;  // SHIFT BUTTON 0=off, 1=on (touch encoders to learn speed masters, hold STEP button and touch encoder to Rate1)(set 1 - if u want use DELETE!)
+
+page_flash = 0; // 0=off (normal switch pages), 1=on (klick and hold page button, when release button - back to page 1);
+
+
 //------------------
 
 Here, you can choose whether the controls automatically change color and whether the running executors should blink.
@@ -77,4 +87,14 @@ Change the executor name to Red, Orange, Sea Green, White, or Black, and you wil
 
 If the blink option is enabled, the running controls will blink.
 
-The lower buttons have not been programmed yet.
+1.0.75
+
+STEP/ACCENT Button = SHIFT
+
+Rate1 function - Hold SHIFT & Touch Encoder
+
+Delete function - Hold SHIFT + HOLD ALT & click executor (if leds on right side highlight - clict STOP/Coundown button to confirm)
+
+Store function - HOLD REC/LoopRec & click executor (if leds on right side highlight - confirm option [Merge] [Remove] [Overwrite] [Create second Cue])
+
+StoreLook function - Hold SHIFT + Hold REC  - now u can release shift & click on executor (if leds on right side highlight - confirm option [Merge] [Remove] [Overwrite] [Create second Cue])
