@@ -1,4 +1,4 @@
-//dot2 Akai Fire control code v 1.0.2 by ArtGateOne
+//dot2 Akai Fire control code v 1.0.5 by ArtGateOne
 var robot = require("robotjs");
 var easymidi = require('easymidi');
 var W3CWebSocket = require('websocket')
@@ -10,7 +10,9 @@ var client = new W3CWebSocket('ws://localhost:80/'); //U can change localhost(12
 midi_in = 'FL STUDIO FIRE';     //set correct midi in device name
 midi_out = 'FL STUDIO FIRE';    //set correct midi out device name
 colors = 0; //auto color 0 = off, 1 = on
-blink = 0;  //blin executor 0 = off, 1 = on (blink work only when colors mode is on)
+blink = 0;  //blink run executor 0 = off, 1 = on (blink work only when colors mode is on)
+learn_rate1 = 1;  // 0=off, 1=on (touch encoders to learn speed masters, hold STEP button and touch encoder to Rate1)
+page_flash = 0; // 0=off (normal switch pages), 1=on (klick and hold page button, when release button - back to page 1);
 
 //-----------------------------------------------------------------------------------
 
@@ -86,7 +88,15 @@ buttons_brightness();   //control buttons led on
 input.on('noteon', function (msg) {
     if (msg.note == 16) {//Encoder 1 touch
 
-        if (encoder_mode == 1) {
+        if (encoder_mode == 0) {
+            if (learn_rate1 == 1) {
+                client.send('{"command":"Learn SpecialMaster 3.1","session":' + session + ',"requestType":"command","maxRequests":0}');
+            } else if (learn_rate1 == 2) {
+                client.send('{"command":"Rate1 SpecialMaster 3.1","session":' + session + ',"requestType":"command","maxRequests":0}');
+            }
+        }
+
+        else if (encoder_mode == 1) {
 
             y = encoder_y;
             x = encoder_1_x;
@@ -100,7 +110,15 @@ input.on('noteon', function (msg) {
 
     else if (msg.note == 17) {//Encoder 2 touch
 
-        if (encoder_mode == 1) {
+        if (encoder_mode == 0) {
+            if (learn_rate1 == 1) {
+                client.send('{"command":"Learn SpecialMaster 3.2","session":' + session + ',"requestType":"command","maxRequests":0}');
+            } else if (learn_rate1 == 2) {
+                client.send('{"command":"Rate1 SpecialMaster 3.2","session":' + session + ',"requestType":"command","maxRequests":0}');
+            }
+        }
+
+        else if (encoder_mode == 1) {
 
             y = encoder_y;
             x = encoder_2_x;
@@ -112,7 +130,16 @@ input.on('noteon', function (msg) {
 
 
     else if (msg.note == 18) {//Encoder 3 touch
-        if (encoder_mode == 1) {
+
+        if (encoder_mode == 0) {
+            if (learn_rate1 == 1) {
+                client.send('{"command":"Learn SpecialMaster 3.3","session":' + session + ',"requestType":"command","maxRequests":0}');
+            } else if (learn_rate1 == 2) {
+                client.send('{"command":"Rate1 SpecialMaster 3.3","session":' + session + ',"requestType":"command","maxRequests":0}');
+            }
+        }
+
+        else if (encoder_mode == 1) {
 
             y = encoder_y;
             x = encoder_3_x;
@@ -123,7 +150,16 @@ input.on('noteon', function (msg) {
     }
 
     else if (msg.note == 19) {//Encoder 4 touch
-        if (encoder_mode == 1) {
+
+        if (encoder_mode == 0) {
+            if (learn_rate1 == 1) {
+                client.send('{"command":"Learn SpecialMaster 3.4","session":' + session + ',"requestType":"command","maxRequests":0}');
+            } else if (learn_rate1 == 2) {
+                client.send('{"command":"Rate1 SpecialMaster 3.4","session":' + session + ',"requestType":"command","maxRequests":0}');
+            }
+        }
+
+        else if (encoder_mode == 1) {
 
             y = encoder_y;
             x = encoder_4_x;
@@ -153,9 +189,7 @@ input.on('noteon', function (msg) {
         if (encoder_mode > 3) {
             encoder_mode = 0;
         }
-
         buttons_brightness();
-
     }
 
     else if (msg.note == 31) {//Brightness +
@@ -167,9 +201,7 @@ input.on('noteon', function (msg) {
         if (C2 == 128) {
             C2 = 127;
         }
-
         buttons_brightness();
-
     }
 
     else if (msg.note == 32) {//Brightness -
@@ -182,7 +214,6 @@ input.on('noteon', function (msg) {
             C1 = C1 * 0.5;
             C2 = C2 * 0.5;
         }
-
         buttons_brightness();
     }
 
@@ -233,6 +264,10 @@ input.on('noteon', function (msg) {
         buttons_brightness();
     }
 
+    else if (msg.note == 44 && learn_rate1 == 1) {
+        learn_rate1 = 2;//Rate1 mode
+    }
+
     else if (msg.note >= 54 && msg.note <= 117) {//Executor down
         client.send('{"requestType":"playbacks_userInput","cmdline":"","execIndex":' + buttons[(msg.note - 54)] + ',"pageIndex":' + pageIndex + ',"buttonId":0,"pressed":true,"released":false,"type":0,"session":' + session + ',"maxRequests":0}');
     }
@@ -241,6 +276,7 @@ input.on('noteon', function (msg) {
 
 
 input.on('noteoff', function (msg) {
+
     if (msg.note >= 16 && msg.note <= 19 && encoder_mode == 1) {//Encoder touch off
         robot.mouseToggle('up');
     }
@@ -248,6 +284,19 @@ input.on('noteoff', function (msg) {
     else if (msg.note == 33) {
         blackout = 0;
         client.send('{"command":"SpecialMaster 2.1 At ' + grandmaster + '","session":' + session + ',"requestType":"command","maxRequests":0}');
+    }
+
+    else if (msg.note >= 36 && msg.note <= 39) {//Page 1
+
+        if (page_flash == 1) {
+            pageIndex = 0;
+            buttons_brightness();
+        }
+
+    }
+
+    else if (msg.note == 44 && learn_rate1 == 2) {
+        learn_rate1 = 1;//Learn mode
     }
 
     else if (msg.note >= 54 && msg.note <= 117) {//Executor up
@@ -413,7 +462,7 @@ input.on('cc', function (msg) {
             grandmaster = 0;
         }
 
-        if (blackout == 0) {
+        if (blackout == 0) {//SpecialMaster "grandmaster" . "grand" At
             client.send('{"command":"SpecialMaster 2.1 At ' + grandmaster + '","session":' + session + ',"requestType":"command","maxRequests":0}');
         } else if (blackout == 1) {
             //do nothing
@@ -686,6 +735,9 @@ function buttons_brightness() {
     output.send('cc', { controller: 37, value: C4, channel: 0 });   //button page 2
     output.send('cc', { controller: 38, value: C4, channel: 0 });   //button page 3
     output.send('cc', { controller: 39, value: C4, channel: 0 });   //button page 4
+    if (learn_rate1 != 0) {
+        output.send('cc', { controller: 44, value: C4, channel: 0 });   //Learn Rate1
+    }
 
 
     if (ExecTime == 1) {//ExecTime led
@@ -723,5 +775,4 @@ function buttons_brightness() {
     } else {
         output.send('cc', { controller: 43, value: 0, channel: 0 });
     }
-
 }
