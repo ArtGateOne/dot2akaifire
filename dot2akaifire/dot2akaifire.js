@@ -1,4 +1,4 @@
-//dot2 Akai Fire control code v 1.0.75 by ArtGateOne
+//dot2 Akai Fire control code v 1.1.43 by ArtGateOne
 var robot = require("robotjs");
 var easymidi = require('easymidi');
 var W3CWebSocket = require('websocket')
@@ -9,10 +9,9 @@ var client = new W3CWebSocket('ws://localhost:80/'); //U can change localhost(12
 //CONFIG
 midi_in = 'FL STUDIO FIRE';     //set correct midi in device name
 midi_out = 'FL STUDIO FIRE';    //set correct midi out device name
-colors = 0; //auto color 0 = off, 1 = on
-blink = 0;  //blink run executor 0 = off, 1 = on (blink work only when colors mode is on)
-learn_rate1 = 1;  // SHIFT BUTTON 0=off, 1=on (touch encoders to learn speed masters, hold STEP button and touch encoder to Rate1)(set 1 - if u want use DELETE!)
-page_flash = 0; // 0=off (normal switch pages), 1=on (klick and hold page button, when release button - back to page 1);
+colors = 1; //auto color 0 = off, 1 = on
+blink = 1;  //blink run executor 0 = off, 1 = on (blink work only when colors mode is on)
+page_flash = 0; // 0=off (normal switch pages), 1=on (klick and hold page button to select page, when release button - back to page 1);
 
 //-----------------------------------------------------------------------------------
 
@@ -49,8 +48,9 @@ var grandmaster = 100;
 var blackout = 0;
 
 var cmd = '';
+var interval_on = 0;
 
-console.log(cmd);
+var shift = 1;
 
 var input = new easymidi.Input(midi_in);
 var output = new easymidi.Output(midi_out);
@@ -66,7 +66,50 @@ var C1 = 8;
 var C2 = 16;
 var C3 = 0;
 var C4 = 1;
-var led_toggle = 0;
+
+var interval1 = setInterval(() => {//Speed Master 1 BPM
+    if (led_speedmaster1 == 0) {
+        led_speedmaster1 = 1;
+        output.send('cc', { controller: 45, value: 1, channel: 0 });
+    } else {
+        led_speedmaster1 = 0;
+        output.send('cc', { controller: 45, value: 0, channel: 0 });
+    }
+}, (60000 / speedmaster1));
+
+
+var interval2 = setInterval(() => {//Speed Master 2 BPM
+    if (led_speedmaster2 == 0) {
+        led_speedmaster2 = 1;
+        output.send('cc', { controller: 46, value: 1, channel: 0 });
+    } else {
+        led_speedmaster2 = 0;
+        output.send('cc', { controller: 46, value: 0, channel: 0 });
+    }
+}, (60000 / speedmaster2));
+var interval3 = setInterval(() => {//Speed Master 3 BPM
+    if (led_speedmaster3 == 0) {
+        led_speedmaster3 = 1;
+        output.send('cc', { controller: 47, value: 1, channel: 0 });
+    } else {
+        led_speedmaster3 = 0;
+        output.send('cc', { controller: 47, value: 0, channel: 0 });
+    }
+}, (60000 / speedmaster3));
+var interval4 = setInterval(() => {//Speed Master 4 BPM
+    if (led_speedmaster4 == 0) {
+        led_speedmaster4 = 1;
+        output.send('cc', { controller: 48, value: 1, channel: 0 });
+    } else {
+        led_speedmaster4 = 0;
+        output.send('cc', { controller: 48, value: 0, channel: 0 });
+    }
+}, (60000 / speedmaster4));
+
+var led_speedmaster1 = 3;
+var led_speedmaster2 = 3;
+var led_speedmaster3 = 3;
+var led_speedmaster4 = 3;
 var request = 0;
 var confirm = 0;
 var pageIndex = 0;
@@ -84,7 +127,13 @@ array[9] = 0;//g
 array[10] = 0;//b
 array[267] = 247;//end
 
-output.send('cc', { controller: 127, value: 0, channel: 0 });//off all
+//Speed Master 1 - 4 BPM blink Stop
+clearInterval(interval1);
+clearInterval(interval2);
+clearInterval(interval3);
+clearInterval(interval4);
+
+output.send('cc', { controller: 127, value: 0, channel: 0 });//off all led
 
 buttons_brightness();   //control buttons led on
 
@@ -93,15 +142,7 @@ buttons_brightness();   //control buttons led on
 input.on('noteon', function (msg) {
     if (msg.note == 16) {//Encoder 1 touch
 
-        if (encoder_mode == 0) {
-            if (learn_rate1 == 1) {
-                client.send('{"command":"Learn SpecialMaster 3.1","session":' + session + ',"requestType":"command","maxRequests":0}');
-            } else if (learn_rate1 == 2) {
-                client.send('{"command":"Rate1 SpecialMaster 3.1","session":' + session + ',"requestType":"command","maxRequests":0}');
-            }
-        }
-
-        else if (encoder_mode == 1) {
+        if (encoder_mode == 1) {
 
             y = encoder_y;
             x = encoder_1_x;
@@ -110,20 +151,11 @@ input.on('noteon', function (msg) {
             robot.mouseToggle('down');
 
         }
-
     }
 
     else if (msg.note == 17) {//Encoder 2 touch
 
-        if (encoder_mode == 0) {
-            if (learn_rate1 == 1) {
-                client.send('{"command":"Learn SpecialMaster 3.2","session":' + session + ',"requestType":"command","maxRequests":0}');
-            } else if (learn_rate1 == 2) {
-                client.send('{"command":"Rate1 SpecialMaster 3.2","session":' + session + ',"requestType":"command","maxRequests":0}');
-            }
-        }
-
-        else if (encoder_mode == 1) {
+        if (encoder_mode == 1) {
 
             y = encoder_y;
             x = encoder_2_x;
@@ -136,15 +168,7 @@ input.on('noteon', function (msg) {
 
     else if (msg.note == 18) {//Encoder 3 touch
 
-        if (encoder_mode == 0) {
-            if (learn_rate1 == 1) {
-                client.send('{"command":"Learn SpecialMaster 3.3","session":' + session + ',"requestType":"command","maxRequests":0}');
-            } else if (learn_rate1 == 2) {
-                client.send('{"command":"Rate1 SpecialMaster 3.3","session":' + session + ',"requestType":"command","maxRequests":0}');
-            }
-        }
-
-        else if (encoder_mode == 1) {
+        if (encoder_mode == 1) {
 
             y = encoder_y;
             x = encoder_3_x;
@@ -156,15 +180,7 @@ input.on('noteon', function (msg) {
 
     else if (msg.note == 19) {//Encoder 4 touch
 
-        if (encoder_mode == 0) {
-            if (learn_rate1 == 1) {
-                client.send('{"command":"Learn SpecialMaster 3.4","session":' + session + ',"requestType":"command","maxRequests":0}');
-            } else if (learn_rate1 == 2) {
-                client.send('{"command":"Rate1 SpecialMaster 3.4","session":' + session + ',"requestType":"command","maxRequests":0}');
-            }
-        }
-
-        else if (encoder_mode == 1) {
+        if (encoder_mode == 1) {
 
             y = encoder_y;
             x = encoder_4_x;
@@ -175,7 +191,7 @@ input.on('noteon', function (msg) {
         }
     }
 
-    else if (msg.note == 25) {
+    else if (msg.note == 25) {//Grand Master encoder click Toggle B.O.
         if (blackout == 0) {
             blackout = 1;
             client.send('{"command":"SpecialMaster 2.1 At 0","session":' + session + ',"requestType":"command","maxRequests":0}');
@@ -187,7 +203,7 @@ input.on('noteon', function (msg) {
 
     }
 
-    else if (msg.note == 26) {
+    else if (msg.note == 26) {//select encoder mode
 
         encoder_mode++;
 
@@ -222,7 +238,7 @@ input.on('noteon', function (msg) {
         buttons_brightness();
     }
 
-    else if (msg.note == 33) {
+    else if (msg.note == 33) {//B.O. on
         blackout = 1;
         client.send('{"command":"SpecialMaster 2.1 At 0","session":' + session + ',"requestType":"command","maxRequests":0}');
     }
@@ -269,18 +285,49 @@ input.on('noteon', function (msg) {
         buttons_brightness();
     }
 
-    else if (msg.note == 44 && learn_rate1 == 1) {
-        learn_rate1 = 2;//Rate1 mode
-        if (confirm == 0){
-            output.send('cc', { controller: 44, value: 1, channel: 0 });   //Led highlight
-            output.send('cc', { controller: 49, value: 1, channel: 0 });   //Led highlight delete
+    else if (msg.note == 44 && shift == 1) {//Shift
+        shift = 2;//Rate1 mode
+        if (confirm == 0) {
+            output.send('cc', { controller: 44, value: 1, channel: 0 });   //Led highlight (shift)
+            output.send('cc', { controller: 49, value: 1, channel: 0 });   //Led highlight delete (alt)
             output.send('cc', { controller: 53, value: 2, channel: 0 });   //Led highlight rec
         }
+    }
 
+    else if (msg.note == 45) {//Speed Master 1 Learn/Rate1
+        if (shift == 2) {
+            client.send('{"command":"Rate1 SpecialMaster 3.1","session":' + session + ',"requestType":"command","maxRequests":0}');
+        } else {
+            client.send('{"command":"Learn SpecialMaster 3.1","session":' + session + ',"requestType":"command","maxRequests":0}');
+        }
+    }
+
+    else if (msg.note == 46) {//Speed Master 2 Learn/Rate1
+        if (shift == 2) {
+            client.send('{"command":"Rate1 SpecialMaster 3.2","session":' + session + ',"requestType":"command","maxRequests":0}');
+        } else {
+            client.send('{"command":"Learn SpecialMaster 3.2","session":' + session + ',"requestType":"command","maxRequests":0}');
+        }
+    }
+
+    else if (msg.note == 47) {//Speed Master 3 Learn/Rate1
+        if (shift == 2) {
+            client.send('{"command":"Rate1 SpecialMaster 3.3","session":' + session + ',"requestType":"command","maxRequests":0}');
+        } else {
+            client.send('{"command":"Learn SpecialMaster 3.3","session":' + session + ',"requestType":"command","maxRequests":0}');
+        }
+    }
+
+    else if (msg.note == 48) {//Speed Master 4 Learn/Rate1
+        if (shift == 2) {
+            client.send('{"command":"Rate1 SpecialMaster 3.4","session":' + session + ',"requestType":"command","maxRequests":0}');
+        } else {
+            client.send('{"command":"Learn SpecialMaster 3.4","session":' + session + ',"requestType":"command","maxRequests":0}');
+        }
     }
 
     else if (msg.note == 49) {//Delete
-        if (cmd == '' && learn_rate1 == 2) {
+        if (cmd == '' && shift == 2) {
             cmd = 'Delete';
             output.send('cc', { controller: 49, value: 2, channel: 0 });   //REC button red
         }
@@ -308,7 +355,7 @@ input.on('noteon', function (msg) {
     }
 
     else if (msg.note == 53) {//REC button
-        if (cmd == '' && confirm == 0 && learn_rate1 == 2) {
+        if (cmd == '' && confirm == 0 && shift == 2) {
             cmd = 'StoreLook';
             output.send('cc', { controller: 53, value: 1, channel: 0 });   //REC button red
         }
@@ -347,10 +394,10 @@ input.on('noteoff', function (msg) {
         }
     }
 
-    else if (msg.note == 44 && learn_rate1 == 2) {
-        learn_rate1 = 1;//Learn mode
+    else if (msg.note == 44 && shift == 2) {
+        shift = 1;//Learn mode
         output.send('cc', { controller: 44, value: 2, channel: 0 });   //Learn Rate1
-        if (confirm == 0){
+        if (confirm == 0) {
             confirm_off();
         }
     }
@@ -365,7 +412,7 @@ input.on('noteoff', function (msg) {
     else if (msg.note == 53) {
         if (cmd == 'Store' || cmd == 'StoreLook') {
             cmd = '';
-            if (learn_rate1 == 2) {
+            if (shift == 2) {
                 output.send('cc', { controller: 53, value: 2, channel: 0 });   //REC button yellow
             }
 
@@ -621,6 +668,10 @@ client.onmessage = function (e) {
             }
         }
 
+        if (obj.page) {
+            console.log(obj.page);
+        }
+
         if (obj.text) {
             cmd = obj.text;
             if (obj.text == 'Store' || obj.text == 'StoreLook') {
@@ -644,12 +695,16 @@ client.onmessage = function (e) {
         }
 
         if (obj.responseType == "login" && obj.result == true) {
-            setInterval(interval, 100);//80
+            if (interval_on == 0) {
+                interval_on = 1;
+                setInterval(interval, 100);//80
+            }
+
             console.log("...LOGGED");
             console.log("SESSION " + session);
         }
 
-        else if (obj.responseType == "playbacks") {
+        else if (obj.responseType == "playbacks") {//Decode data & control led
 
             request++;
 
@@ -691,7 +746,136 @@ client.onmessage = function (e) {
                 }
                 index = index + 4;
 
-                output.send('sysex', array);
+                output.send('sysex', array);    //send led data to midi
+
+                //Speed Master led control
+                if (obj.itemGroups[4].items[15][0].tt.t == "Master Speed 1") {//led interval BPM
+                    if (led_speedmaster1 == 3) {//if correct Speed Master is stored -> led yellow
+                        led_speedmaster1 = 0;
+                        output.send('cc', { controller: 45, value: 2, channel: 0 });// led yellow
+                    }
+
+                    if (speedmaster1 != parseFloat(obj.itemGroups[4].items[15][0].cues.items[0].t)) {   //check change speed
+                        if ((obj.itemGroups[4].items[15][0].cues.items[0].t) == "Stop") {   //set speed master at 0 - oFF
+                            speedmaster1 = 0;
+                        } else {
+                            speedmaster1 = parseFloat(obj.itemGroups[4].items[15][0].cues.items[0].t); //read speed from dot2 and set to val
+                        }
+
+                        clearInterval(interval1);   //stop interval
+                        output.send('cc', { controller: 45, value: 2, channel: 0 });// led yellow
+
+                        if (speedmaster1 != 60 && speedmaster1 != 0) {//if speed != 0 and 60 -> turn on interval and blink led
+                            interval1 = setInterval(() => {
+                                if (led_speedmaster1 == 0) {
+                                    led_speedmaster1 = 1;
+                                    output.send('cc', { controller: 45, value: 2, channel: 0 });// led yellow
+                                } else {
+                                    led_speedmaster1 = 0;
+                                    output.send('cc', { controller: 45, value: 0, channel: 0 });// led off
+                                }
+                            }, (30000 / speedmaster1));
+                        } else if (speedmaster1 == 0) { //if speed = 0 (Stop) - set led to red
+                            output.send('cc', { controller: 45, value: 1, channel: 0 });// led red
+                        }
+                    }
+                }
+
+                if (obj.itemGroups[4].items[14][0].tt.t == "Master Speed 2") {//led interval BPM
+                    if (led_speedmaster2 == 3) {//if correct Speed Master is stored -> led yellow
+                        led_speedmaster2 = 0;
+                        output.send('cc', { controller: 46, value: 2, channel: 0 });// led yellow
+                    }
+
+                    if (speedmaster2 != parseFloat(obj.itemGroups[4].items[14][0].cues.items[0].t)) {   //check change speed
+                        if ((obj.itemGroups[4].items[14][0].cues.items[0].t) == "Stop") {   //set speed master at 0 - oFF
+                            speedmaster2 = 0;
+                        } else {
+                            speedmaster2 = parseFloat(obj.itemGroups[4].items[14][0].cues.items[0].t); //read speed from dot2 and set to val
+                        }
+
+                        clearInterval(interval2);   //stop interval
+                        output.send('cc', { controller: 46, value: 2, channel: 0 });// led yellow
+
+                        if (speedmaster2 != 60 && speedmaster2 != 0) {//if speed != 0 and 60 -> turn on interval and blink led
+                            interval2 = setInterval(() => {
+                                if (led_speedmaster2 == 0) {
+                                    led_speedmaster2 = 1;
+                                    output.send('cc', { controller: 46, value: 2, channel: 0 });// led yellow
+                                } else {
+                                    led_speedmaster2 = 0;
+                                    output.send('cc', { controller: 46, value: 0, channel: 0 });// led off
+                                }
+                            }, (30000 / speedmaster2));
+                        } else if (speedmaster2 == 0) { //if speed = 0 (Stop) - set led to red
+                            output.send('cc', { controller: 46, value: 1, channel: 0 });// led red
+                        }
+                    }
+                }
+
+                if (obj.itemGroups[4].items[13][0].tt.t == "Master Speed 3") {//led interval BPM
+                    if (led_speedmaster3 == 3) {//if correct Speed Master is stored -> led yellow
+                        led_speedmaster3 = 0;
+                        output.send('cc', { controller: 47, value: 2, channel: 0 });// led yellow
+                    }
+
+                    if (speedmaster3 != parseFloat(obj.itemGroups[4].items[13][0].cues.items[0].t)) {   //check change speed
+                        if ((obj.itemGroups[4].items[13][0].cues.items[0].t) == "Stop") {   //set speed master at 0 - oFF
+                            speedmaster3 = 0;
+                        } else {
+                            speedmaster3 = parseFloat(obj.itemGroups[4].items[13][0].cues.items[0].t); //read speed from dot2 and set to val
+                        }
+
+                        clearInterval(interval3);   //stop interval
+                        output.send('cc', { controller: 47, value: 2, channel: 0 });// led yellow
+
+                        if (speedmaster3 != 60 && speedmaster3 != 0) {//if speed != 0 and 60 -> turn on interval and blink led
+                            interval3 = setInterval(() => {
+                                if (led_speedmaster3 == 0) {
+                                    led_speedmaster3 = 1;
+                                    output.send('cc', { controller: 47, value: 2, channel: 0 });// led yellow
+                                } else {
+                                    led_speedmaster3 = 0;
+                                    output.send('cc', { controller: 47, value: 0, channel: 0 });// led off
+                                }
+                            }, (30000 / speedmaster3));
+                        } else if (speedmaster3 == 0) { //if speed = 0 (Stop) - set led to red
+                            output.send('cc', { controller: 47, value: 1, channel: 0 });// led red
+                        }
+                    }
+                }
+
+                if (obj.itemGroups[4].items[12][0].tt.t == "Master Speed 4") {//led interval BPM
+                    if (led_speedmaster4 == 3) {//if correct Speed Master is stored -> led yellow
+                        led_speedmaster4 = 0;
+                        output.send('cc', { controller: 48, value: 2, channel: 0 });// led yellow
+                    }
+
+                    if (speedmaster4 != parseFloat(obj.itemGroups[4].items[12][0].cues.items[0].t)) {   //check change speed
+                        if ((obj.itemGroups[4].items[12][0].cues.items[0].t) == "Stop") {   //set speed master at 0 - oFF
+                            speedmaster4 = 0;
+                        } else {
+                            speedmaster4 = parseFloat(obj.itemGroups[4].items[12][0].cues.items[0].t); //read speed from dot2 and set to val
+                        }
+
+                        clearInterval(interval4);   //stop interval
+                        output.send('cc', { controller: 48, value: 2, channel: 0 });// led yellow
+
+                        if (speedmaster4 != 60 && speedmaster4 != 0) {//if speed != 0 and 60 -> turn on interval and blink led
+                            interval4 = setInterval(() => {
+                                if (led_speedmaster4 == 0) {
+                                    led_speedmaster4 = 1;
+                                    output.send('cc', { controller: 48, value: 2, channel: 0 });// led yellow
+                                } else {
+                                    led_speedmaster4 = 0;
+                                    output.send('cc', { controller: 48, value: 0, channel: 0 });// led off
+                                }
+                            }, (30000 / speedmaster4));
+                        } else if (speedmaster4 == 0) { //if speed = 0 (Stop) - set led to red
+                            output.send('cc', { controller: 48, value: 1, channel: 0 });// led red
+                        }
+                    }
+                }
             }
 
             if (obj.responseSubType == 2) {
@@ -705,7 +889,7 @@ client.onmessage = function (e) {
 function interval() {
     if (session > 0) {
 
-        client.send('{"requestType":"playbacks","startIndex":[300,400,500,600],"itemsCount":[16,16,16,16],"pageIndex":' + pageIndex + ',"itemsType":[3,3,3,3],"view":3,"execButtonViewMode":2,"buttonsViewMode":0,"session":' + session + ',"maxRequests":1}');
+        client.send('{"requestType":"playbacks","startIndex":[300,400,500,600,700],"itemsCount":[16,16,16,16,16],"pageIndex":' + pageIndex + ',"itemsType":[3,3,3,3,3],"view":3,"execButtonViewMode":2,"buttonsViewMode":0,"session":' + session + ',"maxRequests":1}');
 
     }
 }
@@ -861,14 +1045,14 @@ function buttons_brightness() {
         output.send('cc', { controller: 43, value: 0, channel: 0 });
     }
 
-    if (learn_rate1 == 1){
+    if (shift == 1) {
         output.send('cc', { controller: 44, value: 2, channel: 0 }); //Learn Rate1 + Shift Led
     }
 }
 
 function confirm_off() {
 
-    if (learn_rate1 == 2) {
+    if (shift == 2) {
         output.send('cc', { controller: 49, value: 1, channel: 0 });   //Learn Rate1
         output.send('cc', { controller: 53, value: 2, channel: 0 });   //Learn Rate1
     }
@@ -881,5 +1065,15 @@ function confirm_off() {
         output.send('cc', { controller: 51, value: 0, channel: 0 });   //Off led
         output.send('cc', { controller: 52, value: 0, channel: 0 });   //Off led
         output.send('cc', { controller: 53, value: 0, channel: 0 });   //Off led
+    }
+}
+
+function BPM_Led_speedmaster1() {
+    if (led_speedmaster1 == 0) {
+        led_speedmaster1 = 1;
+        output.send('cc', { controller: 45, value: 1, channel: 0 });
+    } else {
+        led_speedmaster1 = 0;
+        output.send('cc', { controller: 45, value: 0, channel: 0 });
     }
 }
