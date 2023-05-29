@@ -1,4 +1,4 @@
-//dot2 Akai Fire control code v 1.1.43 by ArtGateOne
+//dot2 Akai Fire control code v 1.1.48 by ArtGateOne
 var robot = require("robotjs");
 var easymidi = require('easymidi');
 var W3CWebSocket = require('websocket')
@@ -9,8 +9,8 @@ var client = new W3CWebSocket('ws://localhost:80/'); //U can change localhost(12
 //CONFIG
 midi_in = 'FL STUDIO FIRE';     //set correct midi in device name
 midi_out = 'FL STUDIO FIRE';    //set correct midi out device name
-colors = 1; //auto color 0 = off, 1 = on
-blink = 1;  //blink run executor 0 = off, 1 = on (blink work only when colors mode is on)
+colors = 0; //auto color 0 = off, 1 = on
+blink = 0;  //blink run executor 0 = off, 1 = on (blink work only when colors mode is on)
 page_flash = 0; // 0=off (normal switch pages), 1=on (klick and hold page button to select page, when release button - back to page 1);
 
 //-----------------------------------------------------------------------------------
@@ -51,6 +51,7 @@ var cmd = '';
 var interval_on = 0;
 
 var shift = 1;
+var alt = 0;
 
 var input = new easymidi.Input(midi_in);
 var output = new easymidi.Output(midi_out);
@@ -297,7 +298,11 @@ input.on('noteon', function (msg) {
     else if (msg.note == 45) {//Speed Master 1 Learn/Rate1
         if (shift == 2) {
             client.send('{"command":"Rate1 SpecialMaster 3.1","session":' + session + ',"requestType":"command","maxRequests":0}');
-        } else {
+        }
+        else if (alt == 1){
+            client.send('{"command":"SpecialMaster 3.1 at 0","session":' + session + ',"requestType":"command","maxRequests":0}');
+        }
+         else {
             client.send('{"command":"Learn SpecialMaster 3.1","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
     }
@@ -305,7 +310,11 @@ input.on('noteon', function (msg) {
     else if (msg.note == 46) {//Speed Master 2 Learn/Rate1
         if (shift == 2) {
             client.send('{"command":"Rate1 SpecialMaster 3.2","session":' + session + ',"requestType":"command","maxRequests":0}');
-        } else {
+        }
+        else if (alt == 1){
+            client.send('{"command":"SpecialMaster 3.2 at 0","session":' + session + ',"requestType":"command","maxRequests":0}');
+        }
+        else {
             client.send('{"command":"Learn SpecialMaster 3.2","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
     }
@@ -313,6 +322,9 @@ input.on('noteon', function (msg) {
     else if (msg.note == 47) {//Speed Master 3 Learn/Rate1
         if (shift == 2) {
             client.send('{"command":"Rate1 SpecialMaster 3.3","session":' + session + ',"requestType":"command","maxRequests":0}');
+        }
+        else if (alt == 1){
+            client.send('{"command":"SpecialMaster 3.3 at 0","session":' + session + ',"requestType":"command","maxRequests":0}');
         } else {
             client.send('{"command":"Learn SpecialMaster 3.3","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
@@ -321,7 +333,11 @@ input.on('noteon', function (msg) {
     else if (msg.note == 48) {//Speed Master 4 Learn/Rate1
         if (shift == 2) {
             client.send('{"command":"Rate1 SpecialMaster 3.4","session":' + session + ',"requestType":"command","maxRequests":0}');
-        } else {
+        } 
+        else if (alt == 1){
+            client.send('{"command":"SpecialMaster 3.4 at 0","session":' + session + ',"requestType":"command","maxRequests":0}');
+        }
+        else {
             client.send('{"command":"Learn SpecialMaster 3.4","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
     }
@@ -330,6 +346,9 @@ input.on('noteon', function (msg) {
         if (cmd == '' && shift == 2) {
             cmd = 'Delete';
             output.send('cc', { controller: 49, value: 2, channel: 0 });   //REC button red
+        } else if (alt == 0){//alt on
+            alt = 1;
+            output.send('cc', { controller: 49, value: 1, channel: 0 });
         }
     }
 
@@ -406,6 +425,10 @@ input.on('noteoff', function (msg) {
         if (cmd == 'Delete') {
             cmd = '';
             confirm_off();
+        }
+        else if (alt == 1){
+            alt = 0;
+            output.send('cc', { controller: 49, value: 0, channel: 0 });
         }
     }
 
