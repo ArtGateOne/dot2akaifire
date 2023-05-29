@@ -34,8 +34,6 @@ colors = 0; //auto color 0 = off, 1 = on (program get color from executor name)
 
 blink = 0;  //blink run executor 0 = off, 1 = on (blink work only when colors mode is on)
 
-learn_rate1 = 1;  // SHIFT BUTTON 0=off, 1=on (touch encoders to learn speed masters, hold STEP button and touch encoder to Rate1)(set 1 - if u want use DELETE!)
-
 page_flash = 0; // 0=off (normal switch pages), 1=on (klick and hold page button, when release button - back to page 1);
 
 
@@ -89,12 +87,26 @@ If the blink option is enabled, the running controls will blink.
 
 1.0.75
 
-STEP/ACCENT Button = SHIFT
+STEP/ACCENT Button = HOLD to extra fuction
 
-Rate1 function - Hold SHIFT & Touch Encoder
+Rate1 function - Hold STEP/ACCENT & click [SNAP, TAP, OVERVIEW, or SHIFT] ro ewset Speed Master BPM
 
-Delete function - Hold SHIFT + HOLD ALT & click executor (if leds on right side highlight - clict STOP/Coundown button to confirm)
+Delete executor function - Hold STEP/ACCENT + HOLD ALT & click executor (if leds on right side highlight - click STOP/Coundown button to confirm)
 
 Store function - HOLD REC/LoopRec & click executor (if leds on right side highlight - confirm option [Merge] [Remove] [Overwrite] [Create second Cue])
 
-StoreLook function - Hold SHIFT + Hold REC  - now u can release shift & click on executor (if leds on right side highlight - confirm option [Merge] [Remove] [Overwrite] [Create second Cue])
+StoreLook function - Hold STEP/ACCENT + Hold REC  - now u can release shift & click on executor (if leds on right side highlight - confirm option [Merge] [Remove] [Overwrite] [Create second Cue])
+
+
+1.1.43
+In this version, full support for all keys has been implemented.
+The handling of the Learn and Rate1 functions has been changed to the bottom keys [SNAP, TAP, OVERVIEW, SHIFT].
+
+Encoders in CHANNEL mode smoothly control the speed of Master 1-4.
+
+The keys [SNAP, TAP, OVERVIEW, SHIFT] control the Learn function for the Speed Master.
+
+The buttons can blink at the BPM frequency of the Speed Master - in this case, you should assign Speed Master 1-4 to Executors 716-713. If you assign them correctly, the keys will light up yellow.
+If the BPM key is lit yellow, it means the BPM is lower or higher than 60 - the key will blink. If the Speed Master is in the STOP position, the key will light up red.
+
+If you press and hold the ACCENT key and then click [SNAP, TAP, OVERVIEW, or SHIFT], the keys will reset the BPM (Rate1) for the corresponding Speed Master.
