@@ -1,4 +1,4 @@
-//dot2 Akai Fire control code v 1.1.84 by ArtGateOne
+//dot2 Akai Fire control code v 1.1.85 by ArtGateOne
 var robot = require("robotjs");
 var easymidi = require('easymidi');
 var W3CWebSocket = require('websocket')
@@ -193,6 +193,7 @@ input.on('noteon', function (msg) {
     }
 
     else if (msg.note == 25) {//Grand Master encoder click Toggle B.O.
+
         if (blackout == 0) {
             blackout = 1;
             client.send('{"command":"SpecialMaster 2.1 At 0","session":' + session + ',"requestType":"command","maxRequests":0}');
@@ -201,7 +202,6 @@ input.on('noteon', function (msg) {
             blackout = 0;
             client.send('{"command":"SpecialMaster 2.1 At ' + grandmaster + '","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
-
     }
 
     else if (msg.note == 26) {//select encoder mode
@@ -448,25 +448,24 @@ input.on('noteoff', function (msg) {
                 client.send('{"requestType":"playbacks_userInput","cmdline":"' + cmd + '","execIndex":709,"pageIndex":0,"buttonId":0,"pressed":false,"released":true,"type":0,"session":' + session + ',"maxRequests":0}');
             }
         }
+    }
 
-        else if (msg.note == 53) {
-            if (cmd == 'Store' || cmd == 'StoreLook') {
-                cmd = '';
-                if (shift == 2) {
-                    output.send('cc', { controller: 53, value: 2, channel: 0 });   //REC button yellow
-                }
-
-                else {
-                    output.send('cc', { controller: 53, value: 0, channel: 0 });   //REC button off
-                }
-
+    else if (msg.note == 53) {
+        if (cmd == 'Store' || cmd == 'StoreLook') {
+            cmd = '';
+            if (shift == 2) {
+                output.send('cc', { controller: 53, value: 2, channel: 0 });   //REC button yellow
             }
-        }
 
-        else if (msg.note >= 54 && msg.note <= 117) {//Executor up
-            client.send('{"requestType":"playbacks_userInput","cmdline":"","execIndex":' + buttons[(msg.note - 54)] + ',"pageIndex":' + pageIndex + ',"buttonId":0,"pressed":false,"released":true,"type":0,"session":' + session + ',"maxRequests":0}');
-        }
+            else {
+                output.send('cc', { controller: 53, value: 0, channel: 0 });   //REC button off
+            }
 
+        }
+    }
+
+    else if (msg.note >= 54 && msg.note <= 117) {//Executor up
+        client.send('{"requestType":"playbacks_userInput","cmdline":"","execIndex":' + buttons[(msg.note - 54)] + ',"pageIndex":' + pageIndex + ',"buttonId":0,"pressed":false,"released":true,"type":0,"session":' + session + ',"maxRequests":0}');
     }
 });
 
