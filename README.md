@@ -110,3 +110,7 @@ The buttons can blink at the BPM frequency of the Speed Master - in this case, y
 If the BPM key is lit yellow, it means the BPM is lower or higher than 60 - the key will blink. If the Speed Master is in the STOP position, the key will light up red.
 
 If you press and hold the ACCENT key and then click [SNAP, TAP, OVERVIEW, or SHIFT], the keys will reset the BPM (Rate1) for the corresponding Speed Master.
+
+
+1.1.85
+Button Stop and Plat - now control exec 710 & 711 on page 1
