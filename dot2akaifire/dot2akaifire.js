@@ -1,4 +1,4 @@
-//dot2 Akai Fire control code v 1.1.48 by ArtGateOne
+//dot2 Akai Fire control code v 1.1.84 by ArtGateOne
 var robot = require("robotjs");
 var easymidi = require('easymidi');
 var W3CWebSocket = require('websocket')
@@ -120,7 +120,7 @@ var y = 0;
 var buttons = [315, 314, 313, 312, 311, 310, 309, 308, 307, 306, 305, 304, 303, 302, 301, 300, 415, 414, 413, 412, 411, 410, 409, 408, 407, 406, 405, 404, 403, 402, 401, 400, 515, 514, 513, 512, 511, 510, 509, 508, 507, 506, 505, 504, 503, 502, 501, 500, 615, 614, 613, 612, 611, 610, 609, 608, 607, 606, 605, 604, 603, 602, 601, 600];
 var array = [240, 71, 127, 67, 101];//sysex
 //0xF0, 0x47, 0x7F, 0x43, 0x65, 0x00, 0x40,
-array[5] = 02;//hh
+array[5] = 2;//hh
 array[6] = 0;//ll
 array[7] = 0;//index
 array[8] = 16;//r
@@ -299,10 +299,10 @@ input.on('noteon', function (msg) {
         if (shift == 2) {
             client.send('{"command":"Rate1 SpecialMaster 3.1","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
-        else if (alt == 1){
+        else if (alt == 1) {
             client.send('{"command":"SpecialMaster 3.1 at 0","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
-         else {
+        else {
             client.send('{"command":"Learn SpecialMaster 3.1","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
     }
@@ -311,7 +311,7 @@ input.on('noteon', function (msg) {
         if (shift == 2) {
             client.send('{"command":"Rate1 SpecialMaster 3.2","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
-        else if (alt == 1){
+        else if (alt == 1) {
             client.send('{"command":"SpecialMaster 3.2 at 0","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
         else {
@@ -323,7 +323,7 @@ input.on('noteon', function (msg) {
         if (shift == 2) {
             client.send('{"command":"Rate1 SpecialMaster 3.3","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
-        else if (alt == 1){
+        else if (alt == 1) {
             client.send('{"command":"SpecialMaster 3.3 at 0","session":' + session + ',"requestType":"command","maxRequests":0}');
         } else {
             client.send('{"command":"Learn SpecialMaster 3.3","session":' + session + ',"requestType":"command","maxRequests":0}');
@@ -333,8 +333,8 @@ input.on('noteon', function (msg) {
     else if (msg.note == 48) {//Speed Master 4 Learn/Rate1
         if (shift == 2) {
             client.send('{"command":"Rate1 SpecialMaster 3.4","session":' + session + ',"requestType":"command","maxRequests":0}');
-        } 
-        else if (alt == 1){
+        }
+        else if (alt == 1) {
             client.send('{"command":"SpecialMaster 3.4 at 0","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
         else {
@@ -346,7 +346,7 @@ input.on('noteon', function (msg) {
         if (cmd == '' && shift == 2) {
             cmd = 'Delete';
             output.send('cc', { controller: 49, value: 2, channel: 0 });   //REC button red
-        } else if (alt == 0){//alt on
+        } else if (alt == 0) {//alt on
             alt = 1;
             output.send('cc', { controller: 49, value: 1, channel: 0 });
         }
@@ -363,6 +363,8 @@ input.on('noteon', function (msg) {
         if (confirm == 1) {
             client.send('{"requestType":"commandConfirmationResult","result":4,"option":[],"session":' + session + ',"maxRequests":0}'); //Remove
             confirm_off();
+        } else {//exec 711
+            client.send('{"requestType":"playbacks_userInput","cmdline":"' + cmd + '","execIndex":710,"pageIndex":0,"buttonId":0,"pressed":true,"released":false,"type":0,"session":' + session + ',"maxRequests":0}');
         }
     }
 
@@ -370,6 +372,8 @@ input.on('noteon', function (msg) {
         if (confirm == 1) {
             client.send('{"requestType":"commandConfirmationResult","result":1,"option":[],"session":' + session + ',"maxRequests":0}'); //Overwrite
             confirm_off();
+        } else {//Exec 710
+            client.send('{"requestType":"playbacks_userInput","cmdline":"' + cmd + '","execIndex":709,"pageIndex":0,"buttonId":0,"pressed":true,"released":false,"type":0,"session":' + session + ',"maxRequests":0}');
         }
     }
 
@@ -426,28 +430,43 @@ input.on('noteoff', function (msg) {
             cmd = '';
             confirm_off();
         }
-        else if (alt == 1){
+        else if (alt == 1) {
             alt = 0;
             output.send('cc', { controller: 49, value: 0, channel: 0 });
         }
     }
 
-    else if (msg.note == 53) {
-        if (cmd == 'Store' || cmd == 'StoreLook') {
-            cmd = '';
-            if (shift == 2) {
-                output.send('cc', { controller: 53, value: 2, channel: 0 });   //REC button yellow
-            }
-
-            else {
-                output.send('cc', { controller: 53, value: 0, channel: 0 });   //REC button off
-            }
-
+    else if (msg.note == 51) {//Exec 711
+        if (confirm != 1) {
+            client.send('{"requestType":"playbacks_userInput","cmdline":"' + cmd + '","execIndex":710,"pageIndex":0,"buttonId":0,"pressed":false,"released":true,"type":0,"session":' + session + ',"maxRequests":0}');
         }
     }
 
-    else if (msg.note >= 54 && msg.note <= 117) {//Executor up
-        client.send('{"requestType":"playbacks_userInput","cmdline":"","execIndex":' + buttons[(msg.note - 54)] + ',"pageIndex":' + pageIndex + ',"buttonId":0,"pressed":false,"released":true,"type":0,"session":' + session + ',"maxRequests":0}');
+    else if (msg.note == 52) {//Exec 710
+        if (confirm != 1) {
+            {
+                client.send('{"requestType":"playbacks_userInput","cmdline":"' + cmd + '","execIndex":709,"pageIndex":0,"buttonId":0,"pressed":false,"released":true,"type":0,"session":' + session + ',"maxRequests":0}');
+            }
+        }
+
+        else if (msg.note == 53) {
+            if (cmd == 'Store' || cmd == 'StoreLook') {
+                cmd = '';
+                if (shift == 2) {
+                    output.send('cc', { controller: 53, value: 2, channel: 0 });   //REC button yellow
+                }
+
+                else {
+                    output.send('cc', { controller: 53, value: 0, channel: 0 });   //REC button off
+                }
+
+            }
+        }
+
+        else if (msg.note >= 54 && msg.note <= 117) {//Executor up
+            client.send('{"requestType":"playbacks_userInput","cmdline":"","execIndex":' + buttons[(msg.note - 54)] + ',"pageIndex":' + pageIndex + ',"buttonId":0,"pressed":false,"released":true,"type":0,"session":' + session + ',"maxRequests":0}');
+        }
+
     }
 });
 
