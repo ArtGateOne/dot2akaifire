@@ -559,7 +559,7 @@ input.on('cc', function (msg) {
                     client.send('{"requestType":"encoder","name":' + user1_encoder3 + ',"value":' + (msg.value - 128) + ',"session":' + session + '","maxRequests":0}');
                 }
             }
-            else if (msg.controller == 19) {//User1 Encoder 3
+            else if (msg.controller == 19) {//User1 Encoder 4
                 if (msg.value < 60) {
                     client.send('{"requestType":"encoder","name":' + user1_encoder4 + ',"value":' + (msg.value) + ',"session":' + session + '","maxRequests":0}');
 
@@ -594,7 +594,7 @@ input.on('cc', function (msg) {
                     client.send('{"command":"Feature $feature.3 At + ' + (msg.value - 128) + '","session":' + session + ',"requestType":"command","maxRequests":0}');
                 }
             }
-            else if (msg.controller == 19) {//User2 Encoder 3
+            else if (msg.controller == 19) {//User2 Encoder 4
                 if (msg.value < 60) {
                     client.send('{"command":"Feature $feature.4 At + ' + (msg.value) + '","session":' + session + ',"requestType":"command","maxRequests":0}');
                 } else {
