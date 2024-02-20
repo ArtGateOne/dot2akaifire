@@ -1,4 +1,4 @@
-//dot2 Akai Fire control code v 1.1.85 by ArtGateOne
+//dot2 Akai Fire control code v 1.2 by ArtGateOne
 var robot = require("robotjs");
 var easymidi = require('easymidi');
 var W3CWebSocket = require('websocket')
@@ -9,8 +9,8 @@ var client = new W3CWebSocket('ws://localhost:80/'); //U can change localhost(12
 //CONFIG
 midi_in = 'FL STUDIO FIRE';     //set correct midi in device name
 midi_out = 'FL STUDIO FIRE';    //set correct midi out device name
-colors = 0; //auto color 0 = off, 1 = on
-blink = 0;  //blink run executor 0 = off, 1 = on (blink work only when colors mode is on)
+colors = 1; //auto color 0 = off, 1 = on
+blink = 1;  //blink run executor 0 = off, 1 = on (blink work only when colors mode is on)
 page_flash = 0; // 0=off (normal switch pages), 1=on (klick and hold page button to select page, when release button - back to page 1);
 
 //-----------------------------------------------------------------------------------
@@ -52,6 +52,7 @@ var interval_on = 0;
 
 var shift = 1;
 var alt = 0;
+var encoder_pressed = 0;
 
 var input = new easymidi.Input(midi_in);
 var output = new easymidi.Output(midi_out);
@@ -143,7 +144,9 @@ buttons_brightness();   //control buttons led on
 input.on('noteon', function (msg) {
     if (msg.note == 16) {//Encoder 1 touch
 
-        if (encoder_mode == 1) {
+        if (encoder_mode == 1 && encoder_pressed == 0) {
+
+            encoder_pressed = 1;
 
             y = encoder_y;
             x = encoder_1_x;
@@ -156,7 +159,9 @@ input.on('noteon', function (msg) {
 
     else if (msg.note == 17) {//Encoder 2 touch
 
-        if (encoder_mode == 1) {
+        if (encoder_mode == 1 && encoder_pressed == 0) {
+
+            encoder_pressed = 2;
 
             y = encoder_y;
             x = encoder_2_x;
@@ -169,7 +174,9 @@ input.on('noteon', function (msg) {
 
     else if (msg.note == 18) {//Encoder 3 touch
 
-        if (encoder_mode == 1) {
+        if (encoder_mode == 1 && encoder_pressed == 0) {
+
+            encoder_pressed = 3;
 
             y = encoder_y;
             x = encoder_3_x;
@@ -181,7 +188,9 @@ input.on('noteon', function (msg) {
 
     else if (msg.note == 19) {//Encoder 4 touch
 
-        if (encoder_mode == 1) {
+        if (encoder_mode == 1 && encoder_pressed == 0) {
+
+            encoder_pressed = 4;
 
             y = encoder_y;
             x = encoder_4_x;
@@ -400,7 +409,23 @@ input.on('noteon', function (msg) {
 
 input.on('noteoff', function (msg) {
 
-    if (msg.note >= 16 && msg.note <= 19 && encoder_mode == 1) {//Encoder touch off
+    if (msg.note == 16 && encoder_pressed == 1 && encoder_mode == 1) {//Encoder touch off
+        encoder_pressed = 0;
+        robot.mouseToggle('up');
+    }
+
+    else if (msg.note == 17 && encoder_pressed == 2 && encoder_mode == 1) {//Encoder touch off
+        encoder_pressed = 0;
+        robot.mouseToggle('up');
+    }
+
+    else if (msg.note == 18 && encoder_pressed == 3 && encoder_mode == 1) {//Encoder touch off
+        encoder_pressed = 0;
+        robot.mouseToggle('up');
+    }
+
+    else if (msg.note == 19 && encoder_pressed == 4 && encoder_mode == 1) {//Encoder touch off
+        encoder_pressed = 0;
         robot.mouseToggle('up');
     }
 
@@ -564,7 +589,7 @@ input.on('cc', function (msg) {
                     client.send('{"requestType":"encoder","name":' + user1_encoder3 + ',"value":' + (msg.value - 128) + ',"session":' + session + '","maxRequests":0}');
                 }
             }
-            else if (msg.controller == 19) {//User1 Encoder 3
+            else if (msg.controller == 19) {//User1 Encoder 4
                 if (msg.value < 60) {
                     client.send('{"requestType":"encoder","name":' + user1_encoder4 + ',"value":' + (msg.value) + ',"session":' + session + '","maxRequests":0}');
 
@@ -602,7 +627,7 @@ input.on('cc', function (msg) {
                     client.send('{"requestType":"encoder","name":' + user2_encoder3 + ',"value":' + (msg.value - 128) + ',"session":' + session + '","maxRequests":0}');
                 }
             }
-            else if (msg.controller == 19) {//User2 Encoder 3
+            else if (msg.controller == 19) {//User2 Encoder 4
                 if (msg.value < 60) {
                     client.send('{"requestType":"encoder","name":' + user2_encoder4 + ',"value":' + (msg.value) + ',"session":' + session + '","maxRequests":0}');
 
