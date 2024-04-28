@@ -1,4 +1,4 @@
-//dot2 Akai Fire control code v 1.2 by ArtGateOne
+//dot2 Akai Fire control code v 1.3 by ArtGateOne
 var robot = require("robotjs");
 var easymidi = require('easymidi');
 var W3CWebSocket = require('websocket')
@@ -12,6 +12,7 @@ midi_out = 'FL STUDIO FIRE';    //set correct midi out device name
 colors = 1; //auto color 0 = off, 1 = on
 blink = 1;  //blink run executor 0 = off, 1 = on (blink work only when colors mode is on)
 page_flash = 0; // 0=off (normal switch pages), 1=on (klick and hold page button to select page, when release button - back to page 1);
+onpc_switch_page = 1;   //switch page on pc from akai 0 = off, 1 = on
 
 //-----------------------------------------------------------------------------------
 
@@ -278,21 +279,33 @@ input.on('noteon', function (msg) {
     else if (msg.note == 36) {//Page 1
         pageIndex = 0;
         buttons_brightness();
+        if (onpc_switch_page == 1){
+            client.send('{"command":"Page 1","session":' + session + ',"requestType":"command","maxRequests":0}');
+        }
     }
 
     else if (msg.note == 37) {//Page 2
         pageIndex = 1;
         buttons_brightness();
+        if (onpc_switch_page == 1){
+            client.send('{"command":"Page 2","session":' + session + ',"requestType":"command","maxRequests":0}');
+        }
     }
 
     else if (msg.note == 38) {//Page 3
         pageIndex = 2;
         buttons_brightness();
+        if (onpc_switch_page == 1){
+            client.send('{"command":"Page 3","session":' + session + ',"requestType":"command","maxRequests":0}');
+        }
     }
 
     else if (msg.note == 39) {//Page 4
         pageIndex = 3;
         buttons_brightness();
+        if (onpc_switch_page == 1){
+            client.send('{"command":"Page 4","session":' + session + ',"requestType":"command","maxRequests":0}');
+        }
     }
 
     else if (msg.note == 44 && shift == 1) {//Shift
@@ -499,7 +512,18 @@ input.on('cc', function (msg) {
 
     if (msg.controller == 16 || msg.controller == 17 || msg.controller == 18 || msg.controller == 19) {//Encoder rotate
 
-        if (encoder_mode == 0) {// Speed masters
+        if (encoder_mode == 0) {// On screen encoders (emulate mouse)
+            //mouse = robot.getMousePos();
+            if (msg.value > 64) {
+                y++;
+                robot.dragMouse(x, y);
+            } else {
+                y--;
+                robot.dragMouse(x, y);
+            }
+        }
+
+        else if (encoder_mode == 1) {// Speed masters
 
             if (msg.controller == 16) {//SpeedMaster 1
                 if (msg.value < 60) {
@@ -507,6 +531,7 @@ input.on('cc', function (msg) {
                 } else {
                     speedmaster1 = speedmaster1 + (msg.value - 128)
                 }
+
                 if (speedmaster1 < 0) {
                     speedmaster1 = 0;
                 }
@@ -519,6 +544,7 @@ input.on('cc', function (msg) {
                 } else {
                     speedmaster2 = speedmaster2 + (msg.value - 128)
                 }
+
                 if (speedmaster2 < 0) {
                     speedmaster2 = 0;
                 }
@@ -531,6 +557,7 @@ input.on('cc', function (msg) {
                 } else {
                     speedmaster3 = speedmaster3 + (msg.value - 128)
                 }
+
                 if (speedmaster3 < 0) {
                     speedmaster3 = 0;
                 }
@@ -543,24 +570,15 @@ input.on('cc', function (msg) {
                 } else {
                     speedmaster4 = speedmaster4 + (msg.value - 128)
                 }
+
                 if (speedmaster4 < 0) {
                     speedmaster4 = 0;
                 }
                 client.send('{"command":"SpecialMaster 3.4 At ' + speedmaster4 + '","session":' + session + ',"requestType":"command","maxRequests":0}');
             }
         }
-        else if (encoder_mode == 1) {// On screen encoders (emulate mouse)
-            //mouse = robot.getMousePos();
-            if (msg.value > 64) {
-                y++;
-                robot.dragMouse(x, y);
-            }
 
-            else {
-                y--;
-                robot.dragMouse(x, y);
-            }
-        } else if (encoder_mode == 2) {
+        else if (encoder_mode == 2) {
 
 
             if (msg.controller == 16) {//User1 Encoder 1
@@ -589,6 +607,7 @@ input.on('cc', function (msg) {
                     client.send('{"requestType":"encoder","name":' + user1_encoder3 + ',"value":' + (msg.value - 128) + ',"session":' + session + '","maxRequests":0}');
                 }
             }
+
             else if (msg.controller == 19) {//User1 Encoder 4
                 if (msg.value < 60) {
                     client.send('{"requestType":"encoder","name":' + user1_encoder4 + ',"value":' + (msg.value) + ',"session":' + session + '","maxRequests":0}');
@@ -627,6 +646,7 @@ input.on('cc', function (msg) {
                     client.send('{"requestType":"encoder","name":' + user2_encoder3 + ',"value":' + (msg.value - 128) + ',"session":' + session + '","maxRequests":0}');
                 }
             }
+
             else if (msg.controller == 19) {//User2 Encoder 4
                 if (msg.value < 60) {
                     client.send('{"requestType":"encoder","name":' + user2_encoder4 + ',"value":' + (msg.value) + ',"session":' + session + '","maxRequests":0}');
@@ -635,7 +655,6 @@ input.on('cc', function (msg) {
                     client.send('{"requestType":"encoder","name":' + user2_encoder4 + ',"value":' + (msg.value - 128) + ',"session":' + session + '","maxRequests":0}');
                 }
             }
-
         }
     }
 
