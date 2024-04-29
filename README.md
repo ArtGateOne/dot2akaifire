@@ -1,4 +1,4 @@
-# dot2akaifire
+# dot2akaifire 1.3
 Nodejs code to control dot2 wia akai fire midi controller
 
 This is the very early version of the code to control dot2 using the Akai Fire controller.
@@ -36,6 +36,8 @@ blink = 0;  //blink run executor 0 = off, 1 = on (blink work only when colors mo
 
 page_flash = 0; // 0=off (normal switch pages), 1=on (klick and hold page button, when release button - back to page 1);
 
+onpc_switch_page = 1;   //switch page on pc from akai 0 = off, 1 = on
+
 
 //------------------
 
@@ -48,10 +50,12 @@ Usage:
 The first button on the left allows you to select the encoder mode.
 
 If you choose Channel (default),
-the encoders control our speed master 1 - 4.
+the encoders work as a mouse - touching them moves the cursor to XY, and rotating them controls a parameter. Unfortunately, this functionality is not good and can be frustrating, but I left it in case someone finds it useful.
+
 
 In Mixer mode,
-the encoders work as a mouse - touching them moves the cursor to XY, and rotating them controls a parameter. Unfortunately, this functionality is not good and can be frustrating, but I left it in case someone finds it useful.
+the encoders control our speed master 1 - 4.
+
 
 In User1 mode,
 the encoders control the attributes defined in the configuration below (you can, of course, change them).
