@@ -1,4 +1,4 @@
-//dot2 Akai Fire control code v 1.3 by ArtGateOne
+//dot2 Akai Fire control code v 1.4 by ArtGateOne
 var robot = require("robotjs");
 var easymidi = require('easymidi');
 var W3CWebSocket = require('websocket')
@@ -279,7 +279,7 @@ input.on('noteon', function (msg) {
     else if (msg.note == 36) {//Page 1
         pageIndex = 0;
         buttons_brightness();
-        if (onpc_switch_page == 1){
+        if (onpc_switch_page == 1) {
             client.send('{"command":"Page 1","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
     }
@@ -287,7 +287,7 @@ input.on('noteon', function (msg) {
     else if (msg.note == 37) {//Page 2
         pageIndex = 1;
         buttons_brightness();
-        if (onpc_switch_page == 1){
+        if (onpc_switch_page == 1) {
             client.send('{"command":"Page 2","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
     }
@@ -295,7 +295,7 @@ input.on('noteon', function (msg) {
     else if (msg.note == 38) {//Page 3
         pageIndex = 2;
         buttons_brightness();
-        if (onpc_switch_page == 1){
+        if (onpc_switch_page == 1) {
             client.send('{"command":"Page 3","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
     }
@@ -303,7 +303,7 @@ input.on('noteon', function (msg) {
     else if (msg.note == 39) {//Page 4
         pageIndex = 3;
         buttons_brightness();
-        if (onpc_switch_page == 1){
+        if (onpc_switch_page == 1) {
             client.send('{"command":"Page 4","session":' + session + ',"requestType":"command","maxRequests":0}');
         }
     }
@@ -452,6 +452,9 @@ input.on('noteoff', function (msg) {
         if (page_flash == 1) {
             pageIndex = 0;
             buttons_brightness();
+            if (onpc_switch_page == 1) {
+                client.send('{"command":"Page 1","session":' + session + ',"requestType":"command","maxRequests":0}');
+            }
         }
     }
 
@@ -792,6 +795,8 @@ client.onmessage = function (e) {
         else if (obj.responseType == "playbacks") {//Decode data & control led
 
             request++;
+
+            BO_led_indicator();
 
             if (obj.responseSubType == 3) {
 
@@ -1161,4 +1166,18 @@ function BPM_Led_speedmaster1() {
         led_speedmaster1 = 0;
         output.send('cc', { controller: 45, value: 0, channel: 0 });
     }
+}
+
+function BO_led_indicator() {
+
+    if (blackout == 1 && request < 6 || grandmaster < 100 && request < 6) {//Blink
+
+        output.send('cc', { controller: 33, value: 0, channel: 0 });   //B.O.
+
+    }
+
+    else {
+        output.send('cc', { controller: 33, value: C4, channel: 0 });   //B.O.}
+    }
+    return;
 }
