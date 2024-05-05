@@ -1,4 +1,4 @@
-//dot2 Akai Fire control code v 1.4 by ArtGateOne
+//dot2 Akai Fire control code v 1.5 by ArtGateOne
 var robot = require("robotjs");
 var easymidi = require('easymidi');
 var W3CWebSocket = require('websocket')
@@ -145,7 +145,7 @@ buttons_brightness();   //control buttons led on
 input.on('noteon', function (msg) {
     if (msg.note == 16) {//Encoder 1 touch
 
-        if (encoder_mode == 1 && encoder_pressed == 0) {
+        if (encoder_mode == 0 && encoder_pressed == 0) {
 
             encoder_pressed = 1;
 
@@ -160,7 +160,7 @@ input.on('noteon', function (msg) {
 
     else if (msg.note == 17) {//Encoder 2 touch
 
-        if (encoder_mode == 1 && encoder_pressed == 0) {
+        if (encoder_mode == 0 && encoder_pressed == 0) {
 
             encoder_pressed = 2;
 
@@ -175,7 +175,7 @@ input.on('noteon', function (msg) {
 
     else if (msg.note == 18) {//Encoder 3 touch
 
-        if (encoder_mode == 1 && encoder_pressed == 0) {
+        if (encoder_mode == 0 && encoder_pressed == 0) {
 
             encoder_pressed = 3;
 
@@ -422,22 +422,22 @@ input.on('noteon', function (msg) {
 
 input.on('noteoff', function (msg) {
 
-    if (msg.note == 16 && encoder_pressed == 1 && encoder_mode == 1) {//Encoder touch off
+    if (msg.note == 16 && encoder_pressed == 1 && encoder_mode == 0) {//Encoder touch off
         encoder_pressed = 0;
         robot.mouseToggle('up');
     }
 
-    else if (msg.note == 17 && encoder_pressed == 2 && encoder_mode == 1) {//Encoder touch off
+    else if (msg.note == 17 && encoder_pressed == 2 && encoder_mode == 0) {//Encoder touch off
         encoder_pressed = 0;
         robot.mouseToggle('up');
     }
 
-    else if (msg.note == 18 && encoder_pressed == 3 && encoder_mode == 1) {//Encoder touch off
+    else if (msg.note == 18 && encoder_pressed == 3 && encoder_mode == 0) {//Encoder touch off
         encoder_pressed = 0;
         robot.mouseToggle('up');
     }
 
-    else if (msg.note == 19 && encoder_pressed == 4 && encoder_mode == 1) {//Encoder touch off
+    else if (msg.note == 19 && encoder_pressed == 4 && encoder_mode == 0) {//Encoder touch off
         encoder_pressed = 0;
         robot.mouseToggle('up');
     }
