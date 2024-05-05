@@ -189,7 +189,7 @@ input.on('noteon', function (msg) {
 
     else if (msg.note == 19) {//Encoder 4 touch
 
-        if (encoder_mode == 1 && encoder_pressed == 0) {
+        if (encoder_mode == 0 && encoder_pressed == 0) {
 
             encoder_pressed = 4;
 
