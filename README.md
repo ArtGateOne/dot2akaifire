@@ -1,4 +1,4 @@
-# dot2akaifire 1.3
+# dot2akaifire 1.4
 Nodejs code to control dot2 wia akai fire midi controller
 
 This is the very early version of the code to control dot2 using the Akai Fire controller.
