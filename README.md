@@ -1,4 +1,4 @@
-# dot2akaifire 1.3
+# dot2akaifire 1.5
 Nodejs code to control dot2 wia akai fire midi controller
 
 This is the very early version of the code to control dot2 using the Akai Fire controller.
@@ -117,4 +117,14 @@ If you press and hold the ACCENT key and then click [SNAP, TAP, OVERVIEW, or SHI
 
 
 1.1.85
-Button Stop and Plat - now control exec 710 & 711 on page 1
+Button Stop and Play - now control exec 710 & 711 on page 1
+
+1.4
+
+I forgot what was changed in versions 1.2 and 1.3 - the current version has improved Flash mode and encoder control (although it's not the same as in MA2 - unfortunately, we don't have Lua available to control it normally).
+I added an option to control pages from MIDI - you can enable or disable it.
+I added a BO and grandmaster indicator - if it's less than 100%, the light blinks.
+
+1.5
+
+The positioning error of the virtual mouse has been corrected.
